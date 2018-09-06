@@ -1,0 +1,13 @@
+{
+  "requirements": {
+    "python": "3.0.0"
+  },
+  "commands": [
+    {
+      "name": "cli-purge-buck",
+      "aliases": ["pib"],
+      "version": "0.1.0",
+      "description": "An example Akamai CLI command to purge or invalidate url from a file in groups of 50 urls per request written in Python"
+    }
+  ]
+}
