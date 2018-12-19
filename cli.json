@@ -4,8 +4,8 @@
   },
   "commands": [
     {
-      "name": "list-edgehostnames",
-      "aliases": ["leh"],
+      "name": "purge-buck",
+      "aliases": ["pbk"],
       "version": "0.1.0",
       "description": "An example Akamai CLI command to list edgehostnames with their assigned slots  written in Python"
     }
