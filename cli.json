@@ -4,10 +4,10 @@
   },
   "commands": [
     {
-      "name": "cli-purge-buck",
-      "aliases": ["pib"],
+      "name": "list-edgehostnames",
+      "aliases": ["leh"],
       "version": "0.1.0",
-      "description": "An example Akamai CLI command to purge or invalidate url from a file in groups of 50 urls per request written in Python"
+      "description": "An example Akamai CLI command to list edgehostnames with their assigned slots  written in Python"
     }
   ]
 }
