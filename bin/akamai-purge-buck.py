@@ -4,6 +4,7 @@ from akamai.edgegrid import EdgeGridAuth,EdgeRc
 from urllib.parse import urljoin
 import json
 import sys
+from os.path import isfile
 from os.path import expanduser
 import time
 from itertools import islice
@@ -13,14 +14,18 @@ from datetime import datetime
 
 
 class buck_purge(object):
-
+    global section
+    section ='ccu'
     print (sys.argv[0])
     def __init__(self):
         parser = argparse.ArgumentParser(
-            description='Purge or invalidate 50 URLs per request.',
+            description='Description: Purge or invalidate 50 URLs per request.',
             usage='''akamai buck_purge <command> [<args>]
 
-The commands that can be executed are:
+System commands:
+    section    section of the .edgerc file  Default is ccu. 
+
+Purge commands:
     delete     delete the content from cache
     invalidate      invalidate the content from cache
 ''')
@@ -29,29 +34,66 @@ The commands that can be executed are:
         # exclude the rest of the args too, or validation will fail
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
-            print ('Unrecognized command')
+            print ('\nError: Unrecognized command\n')
             parser.print_help()
             exit(1)
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
 
     def invalidate(self):
+
         parser = argparse.ArgumentParser(
-            description='Invalidate urls from cache in the file provided.')
+            description='Invalidate urls from cache in the file provided.', usage='''akamai buck_purge invalidate <staging or production> urls''')
         # prefixing the argument with -- means it's optional
+        parser.add_argument('network', action='store', help='Network: staging or production')
         parser.add_argument('urls', action='store', help='File name with the urls to purge')
+        parser.add_argument('--section', action='store', help='section of the .edgerc file')
+
+
         # now that we're inside a subcommand, ignore the first
         # TWO argvs, ie the command (git) and the subcommand (commit)
         args = parser.parse_args(sys.argv[2:])
-        print ('Running invalidate, urls=%s' % args.urls)
+        
+        if (args.section):
+            section=args.section
+            
+        
+        if (args.network not in ['staging', 'production']):
+            print ('\nError: Invalid Network\n')
+            parser.print_help()
+            sys.exit(1)  
+        elif (isfile(args.urls) is not True): 
+            print ('\nError: URL file does not exist\n')
+            parser.print_help()
+            sys.exit(1)
+        else:
+            do_purge(args.urls, args.network, 'invalidate', section)
+
+        
 
     def delete(self):
+
         parser = argparse.ArgumentParser(
-            description='delete urls from cache in the file provided.')
+            description='Invalidate urls from cache in the file provided.', usage='''akamai buck_purge delete <staging or production> urls''')
         # NOT prefixing the argument with -- means it's not optional
+        parser.add_argument('network', action='store', help='Network: staging or production')
         parser.add_argument('urls', action='store', help='File name with the urls to purge')
+        parser.add_argument('--section', action='store', help='section of the .edgerc file')
+
         args = parser.parse_args(sys.argv[2:])
-        print ('Running purge, urls=%s' % args.urls)
+        if (args.section):
+            section=args.section
+        
+        if (args.network not in ['staging', 'production']):
+            print ('\nError: Invalid Network\n')
+            parser.print_help()
+            sys.exit(1)
+        elif (isfile(args.urls) is not True): 
+            print ('\nError: URL file does not exist\n')
+            parser.print_help()
+            sys.exit(1)
+        else:
+            do_purge(args.urls, args.network, 'delete', section)
         
 
 ### Adding Logging ###
@@ -60,6 +102,7 @@ hdlr = logging.FileHandler('./' + datetime.now().strftime('purge_%H_%M_%d_%m_%Y.
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.setLevel(logging.INFO)
+logger.addHandler(hdlr) 
 
 
 def get_base_url(egsection):
@@ -105,32 +148,18 @@ def purge_url(s, burl, purgeurl, netwrk, action):
 
     return response
     
-#def do_purge(cmdargs):
+def do_purge(urls, network, action, section):
 
-    
-#    parser = argparse.ArgumentParser(description='Purge or invalidate 50 URLs per request.')
-    
-#    parser.add_argument('--section', action='store', required=True, help='.edgerc file section')
-#    parser.add_argument('--urls', action='store', required=True, help='File with the urls to purge')
-#    parser.add_argument('--network', action='store', required=True, help='Network to execute the purge/invalidate action.')
-#    parser.add_argument('--action', action='store', required=True, help='Action to excecute Delete or Invalidate')
-    
-#   try:
-#        args = parser.parse_args(cmdargs)
-#        logger.addHandler(hdlr) 
-#    except SystemExit:
-#        return
-    
-#    burl, nsession = get_base_url(args.section)
-    
-#    with open(args.urls) as myfile:
-#        line= [x.strip() for x in islice(myfile, 50)]
+    burl, nsession = get_base_url(section)
 
-#        while line:
-#            time.sleep(1)
-#            if (line !=[]):
-#                purge_url(nsession, burl, line, args.network, args.action)
-#            line= [x.strip() for x in islice(myfile, 50)]
+    with open(urls) as myfile:
+        line= [x.strip() for x in islice(myfile, 50)]
+
+        while line:
+            time.sleep(1)
+            if (line !=[]):
+                purge_url(nsession, burl, line, network, action)
+            line= [x.strip() for x in islice(myfile, 50)]
             
 def main():
     buck_purge()
