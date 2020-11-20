@@ -10,6 +10,7 @@ from itertools import islice
 import argparse
 import logging
 from datetime import datetime
+import error
 
 ### Adding Logging ###
 logger = logging.getLogger('purge-list')
