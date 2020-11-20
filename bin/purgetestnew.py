@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 import json
 import sys
 from os.path import expanduser
+
 import time
 from itertools import islice
 import argparse
