@@ -1,4 +1,4 @@
-# Akamai CLI: Python Example Command2
+# Akamai CLI: Python Example Command3
 
 This repo is an _example_ command for Akamai CLI written in Python.
 
